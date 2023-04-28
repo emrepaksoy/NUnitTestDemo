@@ -36,14 +36,16 @@ namespace NUnitDemo.JobApplicaton.Test
         {
 
             var mockValidator = new Mock<IIdentityValidator>();
-            mockValidator.Setup(i => i.IsValid(""));
+            mockValidator.Setup(i => i.IsValid(It.IsAny<string>())).Returns(true);
+            
             //Arrange
             var evaluator = new ApplicationEvaluator(mockValidator.Object);
             var form = new JobApplication()
             {
                 Applicant = new Applicant()
                 {
-                    Age = 19
+                    Age = 19,
+                    IdentityNumber = "123"
                 },
                 TechStackList = new System.Collections.Generic.List<string>() {""}
                 
@@ -53,15 +55,23 @@ namespace NUnitDemo.JobApplicaton.Test
             var appResult = evaluator.Evaluate(form);
 
             //Assert
-            Assert.AreEqual(ApplicationResult.AutoRejected, appResult);
+            //Assert.AreEqual(ApplicationResult.AutoRejected, appResult);
+
+            //FluentAssertion
+            appResult.Should().Be(ApplicationResult.AutoRejected);
+
 
         }
 
         [Test]
         public void Application_SouldTransferredToAutoAccepted_WithTechStackOver75P()
         {
+
+            var mockValidator = new Mock<IIdentityValidator>();
+            mockValidator.Setup(i => i.IsValid(It.IsAny<string>())).Returns(true);
+
             //Arrange
-            var evaluator = new ApplicationEvaluator(null);
+            var evaluator = new ApplicationEvaluator(mockValidator.Object);
             var form = new JobApplication()
             {
                 Applicant = new Applicant()
@@ -73,8 +83,6 @@ namespace NUnitDemo.JobApplicaton.Test
                     "C#", "RabbitMQ", "Microservice", "Visual Studio"
                 },
                 YearsOfExperience = 15,
-             
-
             };
 
             //Action
@@ -85,6 +93,35 @@ namespace NUnitDemo.JobApplicaton.Test
 
             //FluentAssertion
             appResult.Should().Be(ApplicationResult.AutoAccepted);
+
+        }
+
+        [Test]
+        public void Application_SouldTransferredToHR_WithInvalidIdentityNumber()
+        {
+
+            var mockValidator = new Mock<IIdentityValidator>();
+            mockValidator.Setup(i => i.IsValid(It.IsAny<string>())).Returns(false);
+
+            //Arrange
+            var evaluator = new ApplicationEvaluator(mockValidator.Object);
+            var form = new JobApplication()
+            {
+                Applicant = new Applicant()
+                {
+                    Age = 19
+                },
+                
+            };
+
+            //Action
+            var appResult = evaluator.Evaluate(form);
+
+            //Assert
+            //Assert.AreEqual(ApplicationResult.TransferredToHR, appResult);
+
+            //FluentAssertion
+            appResult.Should().Be(ApplicationResult.TransferredToHR);
 
         }
 
