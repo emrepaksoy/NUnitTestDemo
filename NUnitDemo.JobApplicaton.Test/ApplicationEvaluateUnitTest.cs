@@ -36,7 +36,7 @@ namespace NUnitDemo.JobApplicaton.Test
         {
 
             var mockValidator = new Mock<IIdentityValidator>();
-            mockValidator.Setup(i => i.IsValid(It.IsAny<string>())).Returns(true);
+           mockValidator.Setup(i => i.IsValid(It.IsAny<string>())).Returns(true);
             
             //Arrange
             var evaluator = new ApplicationEvaluator(mockValidator.Object);
@@ -100,7 +100,7 @@ namespace NUnitDemo.JobApplicaton.Test
         public void Application_SouldTransferredToHR_WithInvalidIdentityNumber()
         {
 
-            var mockValidator = new Mock<IIdentityValidator>();
+            var mockValidator = new Mock<IIdentityValidator>(MockBehavior.Loose);
             mockValidator.Setup(i => i.IsValid(It.IsAny<string>())).Returns(false);
 
             //Arrange
@@ -125,7 +125,98 @@ namespace NUnitDemo.JobApplicaton.Test
 
         }
 
+        [Test]
+        public void Application_SouldTransferredToCTO_WithOfficeLocation()
+        {
+
+            var mockValidator = new Mock<IIdentityValidator>();
+
+            //Arrange
+            var evaluator = new ApplicationEvaluator(mockValidator.Object);
+            var form = new JobApplication()
+            {
+                Applicant = new Applicant()
+                {
+                    Age = 19,
+                },
+                OfficeLocation = "Ankara"
+
+            };
+
+            //Action
+            var appResult = evaluator.Evaluate(form);
+
+            //Assert
+            //Assert.AreEqual(ApplicationResult.TransferredToHR, appResult);
+
+            //FluentAssertion
+            appResult.Should().Be(ApplicationResult.TransferredToCTO);
+
+        }
+
+        [Test]
+        public void Application_SouldTransferredToCTO_WithCountry()
+        {
+
+            var mockValidator = new Mock<IIdentityValidator>();
+            mockValidator.Setup(i => i.Country).Returns("SPAIN");
+            //Arrange
+            var evaluator = new ApplicationEvaluator(mockValidator.Object);
+            var form = new JobApplication()
+            {
+                Applicant = new Applicant()
+                {
+                    Age = 19,
+                },
+            };
+
+            //Action
+            var appResult = evaluator.Evaluate(form);
+
+            //Assert
+            //Assert.AreEqual(ApplicationResult.TransferredToHR, appResult);
+
+            //FluentAssertion
+            appResult.Should().Be(ApplicationResult.TransferredToCTO);
+
+        }
+
+        [Test]
+        public void Application_SouldTransferredToCTO_WithHierarchicalTypeCountry()
+        {
+
+            var mockValidator = new Mock<IIdentityValidator>();
+
+            mockValidator.Setup(i => i.CountryProvider.CountryData.Country).Returns("SPAIN");
+            //mockValidator.Setup(i => i.Country).Returns("SPAIN");
 
 
+            //var mockCountry= new Mock<ICountry>();
+            //mockCountry.Setup(i => i.Country).Returns("SPAIN");
+
+            //var mockCountryProvider = new Mock<ICountryProvider>();
+            //mockCountryProvider.Setup(i => i.CountryData).Returns(mockCountry.Object);
+
+            //mockValidator.Setup(i => i.CountryProvider).Returns(mockCountryProvider.Object);    
+            //Arrange
+            var evaluator = new ApplicationEvaluator(mockValidator.Object);
+            var form = new JobApplication()
+            {
+                Applicant = new Applicant()
+                {
+                    Age = 19,
+                },
+            };
+
+            //Action
+            var appResult = evaluator.Evaluate(form);
+
+            //Assert
+            //Assert.AreEqual(ApplicationResult.TransferredToHR, appResult);
+
+            //FluentAssertion
+            appResult.Should().Be(ApplicationResult.TransferredToCTO);
+
+        }
     }
 }

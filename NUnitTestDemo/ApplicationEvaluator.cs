@@ -33,6 +33,17 @@ namespace NUnitTestDemo
             if (form.Applicant.Age < minAge)
                 return ApplicationResult.AutoRejected;
 
+            if (validator.CountryProvider.CountryData.Country != "TURKEY")
+                return ApplicationResult.TransferredToCTO;
+
+            if (validator.Country != "TURKEY")
+                return ApplicationResult.TransferredToCTO;
+
+            if (form.OfficeLocation != "Istanbul")
+                return ApplicationResult.TransferredToCTO;
+
+            var connectionSucceded = validator.CheckConnectionToRemoteServer();
+
             var validIdentity = validator.IsValid(form.Applicant.IdentityNumber);
 
             if (!validIdentity)
